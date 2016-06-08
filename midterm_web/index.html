@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery.webcam.min.js"></script>
+<video autoplay></video>
+<div id="webcam"></div>
+
+<script type="text/javascript">
+jQuery("#webcam").webcam({
+	width: 320,
+	height: 240,
+	mode: "callback",
+	swffile: "jscam.swf",
+});
+</script>
+
+<script>
+    $(document).foundation();
+    </script>
+
+</html>

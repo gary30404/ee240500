@@ -1,0 +1,85 @@
+ <html>
+    <head>
+        <form name="Show">
+            <input type="text" name="MouseR" value="0" size="4"> R<br>
+            <input type="text" name="MouseL" value="0" size="4"> L<br>
+            <input type="text" name="MouseU" value="0" size="4"> U<br>
+            <input type="text" name="MouseD" value="0" size="4"> D<br>
+        </form>
+        <div id=imageDiv style="position:relative; top:20; left:500; height:50; width:50">
+            <img src="http://s24.postimg.org/6ncwbhsbp/car_top.png" width="115" height="63">
+        </div>
+        <script>
+            var tempR = 0;
+            var tempL = 0;
+            var tempU = 0;
+            var tempD = 0;
+            
+            function control(){
+                ek=event.keyCode;
+                if (ek==37) {
+                    moveLeft(5);
+                    setTimeout("moveLeft(4)",10);
+                    setTimeout("moveLeft(3)",40);
+                    setTimeout("moveLeft(2)",90);
+                    setTimeout("moveLeft(1)",160);
+                }
+                if (ek==39) {
+                    moveRight(5);
+                    setTimeout("moveRight(4)",10);
+                    setTimeout("moveRight(3)",40);
+                    setTimeout("moveRight(2)",90);
+                    setTimeout("moveRight(1)",160);
+                }
+                if (ek==38) {
+                    moveDown(5);
+                    setTimeout("moveDown(4)",10);
+                    setTimeout("moveDown(3)",40);
+                    setTimeout("moveDown(2)",90);
+                    setTimeout("moveDown(1)",160);
+                }
+                if (ek==40) {
+                    moveUp(5);
+                    setTimeout("moveUp(4)",10);
+                    setTimeout("moveUp(3)",40);
+                    setTimeout("moveUp(2)",90);
+                    setTimeout("moveUp(1)",160);
+                }
+            }
+            function moveLeft(x){
+                imageDiv.style.posLeft-=x;
+                if (imageDiv.style.posLeft < 0){
+                    imageDiv.style.posLeft =0;
+                }
+                document.Show.MouseL.value = imageDiv.style.posLeft;
+            }
+            function moveRight(x){
+                imageDiv.style.posLeft+=x;
+                if (imageDiv.style.posLeft > 1100){
+                    imageDiv.style.posLeft =1100;
+                }
+                document.Show.MouseR.value = imageDiv.style.posLeft;
+            }
+            function moveDown(x){
+                imageDiv.style.posTop-=x;
+                if (imageDiv.style.posTop < -115){
+                    imageDiv.style.posTop =-115;
+                }
+                document.Show.MouseD.value = imageDiv.style.posTop;
+            }
+            function moveUp(x){
+                imageDiv.style.posTop+=x;
+                
+                if (imageDiv.style.posTop > 500){
+                    imageDiv.style.posTop =500;
+                }
+                document.Show.MouseU.value = imageDiv.style.posTop;
+            }
+            
+        </script>
+    </head>
+    
+    <body onkeydown="control()">
+        
+    </body>
+</html>

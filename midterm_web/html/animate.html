@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <div style="width:600px; height400px; border-style: solid; border-width: 1px;">
+        <canvas id="canvas" width=600 height=400></canvas>
+    </div>
+    
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        
+        // set starting values
+        var fps = 60;
+        var percent = 0
+        var direction = 1;
+        
+        // start the animation
+        animate();
+        
+        function animate() {
+            // set the animation position (0-100)
+            percent += direction;
+            if (percent < 0) {
+                percent = 0;
+                direction = 1;
+            };
+            if (percent > 100) {
+                percent = 100;
+                direction = 1;
+            };
+            
+            draw(percent);
+            
+            // request another frame
+            setTimeout(function() {
+                requestAnimationFrame(animate);
+            }, 1000 / fps);
+        }
+    
+    
+    // draw the current frame based on sliderValue
+    function draw(sliderValue) {
+        
+        // redraw path
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // draw the tracking rectangle
+        var xy;
+        
+        if (sliderValue < 25) {
+            var percent = sliderValue / 24;
+            xy = getLineXYatPercent({
+                x: 100,y: 20}, {
+                x: 200,y: 160}, percent);
+        }
+        else if (sliderValue < 50) {
+            var percent = (sliderValue - 25) / 24
+            xy = getLineXYatPercent({
+                x: 200,y: 160}, {
+                x: 250,y: 120}, percent);
+        }
+        else if (sliderValue < 75) {
+            var percent = (sliderValue - 50) / 24
+            xy = getLineXYatPercent({
+                x: 250,y: 120}, {
+                x: 400,y: 150}, percent);
+        }
+        else {
+            var percent = (sliderValue - 75) / 25
+            xy = getLineXYatPercent({
+                x: 400,y: 150}, {
+                x: 500,y: 90}, percent);
+        }
+        drawRect(xy, "red");
+        
+    }
+    
+    // draw tracking rect at xy
+    function drawRect(point, color) {
+        ctx.fillStyle = "cyan";
+        ctx.strokeStyle = "gray";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.rect(point.x - 13, point.y - 8, 25, 15);
+        ctx.fill();
+        ctx.stroke();
+    }
+    
+    // line: percent is 0-1
+    function getLineXYatPercent(startPt, endPt, percent) {
+        var dx = endPt.x - startPt.x;
+        var dy = endPt.y - startPt.y;
+        var X = startPt.x + dx * percent;
+        var Y = startPt.y + dy * percent;
+        return ({
+                x: X,
+                y: Y
+                });
+    }
+    </script>
+    
+</head>
+<body>
+    <script>
+    </script>
+</body>
+</html>
+

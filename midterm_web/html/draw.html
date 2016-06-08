@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <div style="width:600px; height400px; border-style: solid; border-width: 1px;" onmousedown="md()" onmousemove="mv()" onmouseup="mup()">
+    </div>
+    <form name="Show">
+        <input type="text" name="MouseX" value="0" size="4"> X<br>
+        <input type="text" name="MouseY" value="0" size="4"> Y<br>
+    </form>
+    
+    <script>
+        var draw; //state of draw
+        var m, c; //object
+        
+        var tempX = 0;
+        var tempY = 0;
+        
+        function keyFunction() {
+            if (event.keyCode==68) {
+                draw = true;
+                return false;
+            } else if (event.keyCode==82) {
+                animate();
+                return false;
+            }
+        }
+        document.onkeydown=keyFunction;
+            
+        function init(){
+            m = document.getElementById("m"); //canvas
+            c = m.getContext("2d"); //paint
+            draw = false;
+        }
+        function md(){
+            c.moveTo(event.offsetX, event.offsetY); //begin
+            c.beginPath();
+            tempX = event.offsetX;
+            tempY = event.offsetY;
+            document.Show.MouseX.value = tempX;
+            document.Show.MouseY.value = tempY;
+        }
+        function mv() {
+            if(draw){
+                c.lineTo(event.offsetX, event.offsetY); //next point
+                c.stroke();
+                tempX = event.offsetX;
+                tempY = event.offsetY;
+                document.Show.MouseX.value = tempX;
+                document.Show.MouseY.value = tempY;
+            }
+        }
+        function mup(){  //leave
+            draw = false;
+            c.closePath();
+        }
+    </script>
+    
+</head>
+<body onload="init()">
+    <script>
+    </script>
+</body>
+</html>
+
