@@ -1,0 +1,657 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Robot Security System</title>
+<link rel="stylesheet" href="foundation.min.css">
+</head>
+
+<div class="top-bar">
+<div class="top-bar-left">
+<ul class="menu">
+</ul>
+</div>
+</div>
+
+<div class="callout large primary">
+<div class="row column">
+<h1>Household Security Robot</h1>
+<h2 class="subheader">Midterm Demo Web</h2>
+</div>
+</div>
+
+<div class="row column">
+<h3>Concept Illustration</h3>
+<p>Lucas is a household security robot which can keep your home safe. He patrols around the house at random and automatically so that if any stranger invades your place, he will alarm you. If he detect something intrudes, he will follow behind that stuff or you can set to the manual mode.<br>Materials I will use in the final project demo:<br>(1)Boe-Bot Robot: movement, speaker, infrared and touch wire sensors.<br>(2)Nitrogen6x: control, 3D-accelerometer, and webcam to detect.
+<br>There are some animation and concept demo below:
+</p>
+
+<!-- ---------------------------------------- -->
+<!-- ---------------------------------------- -->
+<!-- ---------------------------------------- -->
+
+
+<div class="row column">
+<div class="blog-post">
+<h3>1. Robot Controller Simulation (with FRDM-KL25Z)</h3>
+<!-- 1/3. Include the RGraph libraries -->
+<script src="RGraph/libraries/RGraph.common.core.js" >
+    <!--
+    
+    //-->
+    </script>
+<script src="RGraph/libraries/RGraph.common.context.js" >
+    <!--
+    
+    //-->
+    </script>
+<script src="RGraph/libraries/RGraph.line.js" >
+    <!--
+    
+    //-->
+    </script>
+<!--[if IE 8]><script src="../excanvas/excanvas.compressed.js">
+ <!--
+ 
+ //-->
+</script><![endif]-->
+
+    <canvas id="cvs" width="600" height="250">[No canvas support]</canvas>
+    <!--
+     Debug Informtion:
+     <div id="myDivElement" />
+     -->
+    <div style="width:600px; height:300px; border-style: solid; border-width: 1px;">
+        <div id="test2" style="
+            width: 100px; height: 100px; position: absolute; left: 100px; top: 100px;">
+            <img src="robot.png" width="100" height="100">
+        </div>
+    </div>
+    <form name="Show">
+        <input type="text" name="MouseX" value="0" size="4"> X<br>
+        <input type="text" name="MouseY" value="0" size="4"> Y<br>
+    </form>
+    
+    <script>
+        <!--
+        
+        var batch=30;
+        var samples=batch;
+        var timecycle=0;
+        var requestCounter = 0;
+        var interval = 0;
+        var nodata = 0;
+        var serverAddressBase = "xdata.";
+        var serverAddress = "xdata.0"; //default file to get from server
+        
+        var tempX = 0;
+        var tempY = 0;
+        var chrId2 = document.getElementById('test2');
+        chrId2.style.top = 1700 + "px";
+        chrId2.style.left = 40 + "px";
+        
+        d1 = [];
+        d2 = [];
+        d3 = [];
+        
+        // Pre-pad the arrays with # of samples null values
+        for (var i=0; i< samples; ++i) {
+            d1.push(null);
+            d2.push(null);
+            d3.push(null);
+        }
+    
+    var xmlHttp = createXmlHttpRequestObject();
+    
+    
+    // creates XMLHttpRequest Instance
+    function createXmlHttpRequestObject(){
+        
+        // will store XMLHttpRequest object
+        // at here
+        var xmlHttp;
+        
+        // works all exceprt IE6 and older
+        try
+        {
+            
+            // try to create XMLHttpRequest object
+            xmlHttp = new XMLHttpRequest();
+        }
+        catch(e)
+        {
+            // assume IE 6 or older
+            try
+            {
+                xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            catch(e){ }
+        }
+        
+        // return object or display error
+        if (!xmlHttp)
+        alert("Error creating the XMLHttpRequest Object");
+        else
+        return xmlHttp;
+    }
+    
+    function GetJsonData()
+    {
+        //debug
+        //myDiv = document.getElementById("myDivElement");
+        //myDiv.innerHTML += "Getting Json Data<br>";
+        nodata=0;
+        
+        if(xmlHttp)
+        {
+            try
+            {
+                xmlHttp.open("Get", serverAddress, false);
+                //xmlHttp.onreadystatechange = handleRequestStateChange; //We use synchronous data transfer, so we don't need this here
+                xmlHttp.send(null);
+                try{
+                    handleJsonData();
+                }
+                catch(err){
+                    if(err=="no data"){
+                        //alert('Waiting '+serverAddressBase+requestCounter);
+                        //setTimeout(GetJsonData,10); //Try again 10ms later
+                        nodata=1; //record status
+                    }
+                }
+            }
+            catch(e)
+            {
+                alert("Can't connect to server\n" + e.toString());
+            }
+        }
+    }
+    
+    function handleRequestStateChange()
+    {
+        if (xmlHttp.readyState == 4)
+        {
+            if(xmlHttp.status == 200|| xmlHttp.status == 0)
+            {
+                try
+                {
+                    handleJsonData();
+                }
+                catch(e)
+                {
+                    alert("Error reading the response: " + e.toString());
+                }
+            }
+            else
+            {
+                alert("Problem retrieving data:\n" + xmlHttp.statusText);
+            }
+            
+            
+        }
+        
+    }
+    
+    function handleJsonData()
+    {
+        var result = xmlHttp.responseText;
+        if(result==''){
+            //alert('No data from xmlhttprequest object!');
+            throw "no data";
+        }
+        else{
+            try{
+                var jobject = eval("(" + result + ")");
+                var i=0;
+                if(jobject.time>timecycle){
+                    timecycle=jobject.time;
+                    if(jobject.xarray.length==0){
+                        throw "no data";
+                    }
+                    else{
+                        for (i=0;i<jobject.xarray.length;i++)
+                        {
+                            //debug
+                            //myDiv.innerHTML += jobject.xarray[i][0] + ", " + jobject.xarray[i][1] + "<br>" ;
+                            d1[i]=jobject.xarray[i][0];
+                            d2[i]=jobject.xarray[i][1];
+                            d3[i]=jobject.xarray[i][2];
+                            /*
+                             d1.push(jobject.xarray[i][0]);
+                             d2.push(jobject.xarray[i][1]);
+                             d3.push(jobject.xarray[i][2]);
+                             */
+                        }
+                    }
+                }
+                else{
+                    //Do nothing
+                }
+            }
+            catch(e){
+                //Retry; ignore all json errors
+            }
+        }
+    }
+    
+    
+    function getGraph(id, d1, d2, d3)
+    {
+        var graph = new RGraph.Line(id, d1, d2, d3);
+        graph.Set('chart.key', ['Xacc', 'Yacc', 'Zacc']);
+        graph.Set('chart.xticks', 100);
+        graph.Set('chart.gutter', 25);
+        graph.Set('chart.background.barcolor1', 'white');
+        graph.Set('chart.background.barcolor2', 'white');
+        graph.Set('chart.title.xaxis', 'Time >>>');
+        graph.Set('chart.title.yaxis', 'Sensor');
+        graph.Set('chart.title', 'Sensor activities'+' xdata.'+requestCounter);
+        //graph.Set('chart.filled', true);
+        //graph.Set('chart.fillstyle', ['#daf1fa', '#faa']);
+        graph.Set('chart.colors', ['rgb(169, 222, 244)', 'red', 'blue']);
+        graph.Set('chart.linewidth', 1);
+        //graph.Set('chart.ylabels.inside', true);
+        graph.Set('chart.yaxispos', 'right');
+        graph.Set('chart.xaxispos', 'center');
+        //graph.Set('chart.ymin', -128);
+        //graph.Set('chart.ymax', 128);
+        graph.Set('chart.xticks', 25);
+        
+        return graph;
+    }
+    
+    function drawGraph ()
+    {
+        //debug
+        //myDiv = document.getElementById("myDivElement");
+        //myDiv.innerHTML += "Request # " + requestCounter + ": <br>";
+        
+        RGraph.Clear(document.getElementById("cvs"));
+        
+        //Prepare new file name to get from
+        serverAddress=serverAddressBase+requestCounter;
+        //alert('Debug'+serverAddress);
+        
+        //Save data from json object to the arrays
+        GetJsonData();
+        //Draw the graph
+        var graph = getGraph('cvs', d1, d2, d3);
+        graph.Draw();
+        if(!nodata){ //Keep the file counter
+            requestCounter=(requestCounter+1)%2; //cycle counter
+            //alert('Counter changed: '+requestCounter);
+        }
+        else{
+            //alert('Counter keeped: '+requestCounter);
+        }
+        d1[1] = usefloor(4000,-4000);
+        d2[1] = usefloor(4000,-4000);
+        
+        
+        tempX = d1[1];
+        tempY = d2[1];
+        
+        document.Show.MouseX.value = tempX;
+        document.Show.MouseY.value = tempY;
+        
+        setTimeout(drawGraph,800);
+    }
+    
+    drawGraph();
+    
+    //this is my codes
+    var n;
+    control();
+    function control() {
+        //var k = event.keyCode,
+        //chrId = document.getElementById('test'),
+        chr = {
+            updown: function () {
+                var y = parseInt(getComputedStyle(chrId2).top);
+                var up = d1[1]/(200);
+                if (y <= 10){
+                    y = 11;
+                }
+                else if (y >= 535){
+                    y = 534;
+                }
+                else{
+                    y=y+up;
+                }
+                
+                return y;
+            },
+            
+            leftright: function () {
+                var x = parseInt(getComputedStyle(chrId2).left);
+                var right = d2[1]/(-200);
+                if (x <= 10){
+                    x = 11;
+                }
+                else if (x >= 535){
+                    x = 534;
+                }
+                else{
+                    x=x+right;
+                }
+                
+                return x;
+            }
+        };
+        
+        chrId2.style.top = (chr.updown()) + "px";
+        chrId2.style.left = (chr.leftright()) + "px";
+        
+        setTimeout("control()",150);
+    }
+    
+    function usefloor(min,max) {
+        return Math.floor(Math.random()*(max-min+1)+min);
+    }
+    
+    //-->
+        </script>
+    <p>You can set the robot to manual mode and use the 3-D accelerometer(FRDM-KL25Z) to control the robot move. <br>Just turn the FRDM-KL25Z upsite down or turn right/left.
+    </p>
+
+<!-- ---------------------------------------- -->
+<!-- ---------------------------------------- -->
+<!-- ---------------------------------------- -->
+
+
+<div class="row column">
+    <div class="blog-post">
+        <h3>2. Robot Moving Simulation</h3>
+        <div style="width:600px; height:300px; border-style: solid; border-width: 1px;">
+            <div id="test" style="
+                width: 100px; height: 100px; position: absolute; left: 100px; top: 100px;">
+                <img src="robot-security-650x502.png" width="100" height="100">
+                    </div>
+        </div>
+        <script>
+            //x:55~550
+            //y:1335~1535
+            
+            chrId = document.getElementById('test');
+            chrId.style.top = 1335 + "px";
+            chrId.style.left = 55 + "px";
+            
+            var n;
+            move(2);
+            function move(n) {
+                //var k = event.keyCode,
+                //chrId = document.getElementById('test'),
+                chr = {
+                    updown: function () {
+                        var y = parseInt(getComputedStyle(chrId).top);
+                        if (n == 0) { //38(up)
+                            //--y;
+                            if (y <= 1335){
+                                y = 1335;
+                            }
+                            else {
+                                y=y-10;
+                            }
+                        }
+                        else if (n == 1) { //40(down)
+                            //++y;
+                            if (y >= 1535){
+                                y = 1535;
+                            }
+                            else {
+                                y=y+10;
+                            }
+                        }
+                        
+                        return y;
+                    },
+                    
+                    leftright: function () {
+                        var x = parseInt(getComputedStyle(chrId).left);
+                        if (n == 2) { //37
+                            //--x;
+                            if (x <= 55){
+                                x = 55;
+                            }
+                            else {
+                                x=x-10;
+                            }
+                        }
+                        else if (n == 3) { //39(right)
+                            //++x;
+                            if (x >= 550){
+                                x = 550;
+                            }
+                            else {
+                                x=x+10;
+                            }
+                        }
+                        
+                        return x;
+                    }
+                };
+                
+                chrId.style.top = (chr.updown()) + "px";
+                chrId.style.left = (chr.leftright()) + "px";
+                
+                setTimeout("move(usefloor(0,3))",150);
+                //setTimeout("move()",150);
+            }
+        
+        
+        function usefloor(min,max) {
+            return Math.floor(Math.random()*(max-min+1)+min);
+        }
+        
+        //document.addEventListener('keydown', move);
+        
+            </script>
+        <p>Lucas moves randomly at a certain range to scare anything being close. Besides, he can monitor the entrance of your place if anyone intrudes.
+        </p>
+    </div>
+</div>
+
+<!-- ---------------------------------------- -->
+<!-- ---------------------------------------- -->
+<!-- ---------------------------------------- -->
+
+<div class="row column">
+<div class="blog-post">
+<h3>3. Robot Tracing Animation</h3>
+<div style="width:600px; height:300px; border-style: solid; border-width: 1px;">
+    <img src="door.png" width="100" height="150">
+    <!--
+    <div id=robot style="position:absolute; top:5; left:500; height:50; width:50">
+        <img src="robot2.png" width="100" height="150">
+    </div> -->
+    <div id="robot" style="
+        width: 100px; height: 100px; position: absolute; left: 100px; top: 100px;">
+        <img src="robot2.png" width="100" height="100">
+    </div>
+    <canvas id="canvas" width="600" height="370"></canvas>
+</div>
+<script>
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    
+    // set starting values
+    var fps = 30;
+    var percent = 0;
+    var direction = 1;
+    
+    //range x:400~770
+    //range y:860~1070
+    var robot = document.getElementById("robot");
+    
+    robot.style.top = 1780 + "px";
+    robot.style.left = 40 + "px";
+    //start the animation
+    animate();
+    
+    function animate() {
+        
+        // set the animation position (0-100)
+        percent += direction;
+        if (percent < 0) {
+            percent = 0;
+            direction = 1;
+        };
+        if (percent > 100) {
+            percent = 0;
+            direction = 1;
+            robot.style.top = 1830 + "px";
+            robot.style.left = 40 + "px";
+        };
+        
+        draw(percent);
+        
+        // request another frame
+        setTimeout(function() {
+                   requestAnimationFrame(animate);
+                   }, 1000 / fps);
+    }
+
+
+// draw the current frame based on sliderValue
+function draw(sliderValue) {
+    
+    // redraw path
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // draw the tracking rectangle
+    var xy;
+    
+    if (sliderValue < 25) {
+        var r_y = parseInt(getComputedStyle(robot).top);
+        var r_x = parseInt(getComputedStyle(robot).left);
+        var percent = sliderValue / 24;
+        xy = getLineXYatPercent({
+                                x: 50,y: 5}, {
+                                x: 180,y: 100}, percent);
+                                r_x=r_x+4;
+                                r_y=r_y+2;
+    }
+    else if (sliderValue < 50) {
+        var r_y = parseInt(getComputedStyle(robot).top);
+        var r_x = parseInt(getComputedStyle(robot).left);
+        var percent = (sliderValue - 25) / 24;
+        xy = getQuadraticBezierXYatPercent({
+                                           x: 180,y: 100}, {
+                                           x: 220,y: 170}, {
+                                           x: 250,y: 110}, percent);
+                                           r_x=r_x+4;
+                                           r_y=r_y+4;
+    }
+    else if (sliderValue < 75) {
+        var r_y = parseInt(getComputedStyle(robot).top);
+        var r_x = parseInt(getComputedStyle(robot).left);
+        var percent = (sliderValue - 50) / 24;
+        xy = getCubicBezierXYatPercent({
+                                       x: 250,y: 110}, {
+                                       x: 290,y: -120}, {
+                                       x: 330,y: 140}, {
+                                       x: 450,y: 130}, percent);
+                                       r_x=r_x+4;
+                                       r_y=r_y-2;
+    }
+    else {
+        var r_y = parseInt(getComputedStyle(robot).top);
+        var r_x = parseInt(getComputedStyle(robot).left);
+        var percent = (sliderValue - 75) / 25;
+        xy = getLineXYatPercent({
+                                x: 450,y: 130}, {
+                                x: 580,y: 90}, percent);
+                                r_x=r_x+4;
+                                r_y=r_y+2;
+    }
+    robot.style.top = r_y + "px";
+    robot.style.left = r_x + "px";
+    drawRect(xy, "red");
+    
+}
+
+// draw tracking rect at xy
+function drawRect(point, color) {
+    ctx.fillStyle = "gray";
+    ctx.strokeStyle = "gray";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.rect(point.x - 13, point.y - 8, 25, 15);
+    ctx.fill();
+    ctx.stroke();
+}
+
+// line: percent is 0-1
+function getLineXYatPercent(startPt, endPt, percent) {
+    var dx = endPt.x - startPt.x;
+    var dy = endPt.y - startPt.y;
+    var X = startPt.x + dx * percent;
+    var Y = startPt.y + dy * percent;
+    return ({
+            x: X,y: Y});
+}
+
+// quadratic bezier: percent is 0-1
+function getQuadraticBezierXYatPercent(startPt, controlPt, endPt, percent) {
+    var x = Math.pow(1 - percent, 2) * startPt.x + 2 * (1 - percent) * percent * controlPt.x + Math.pow(percent, 2) * endPt.x;
+    var y = Math.pow(1 - percent, 2) * startPt.y + 2 * (1 - percent) * percent * controlPt.y + Math.pow(percent, 2) * endPt.y;
+    return ({x: x,y: y});
+}
+
+// cubic bezier percent is 0-1
+function getCubicBezierXYatPercent(startPt, controlPt1, controlPt2, endPt, percent) {
+    var x = CubicN(percent, startPt.x, controlPt1.x, controlPt2.x, endPt.x);
+    var y = CubicN(percent, startPt.y, controlPt1.y, controlPt2.y, endPt.y);
+    return ({x: x,y: y});
+}
+
+// cubic helper formula at percent distance
+function CubicN(pct, a, b, c, d) {
+    var t2 = pct * pct;
+    var t3 = t2 * pct;
+    return a + (-a * 3 + pct * (3 * a - a * pct)) * pct + (3 * b + pct * (-6 * b + b * 3 * pct)) * pct + (c * 3 - c * 3 * pct) * t2 + d * t3;
+}
+</script>
+<p>The movement of the rectange indicates the step of the stranger. Lucas will follow behind and try to stop it somehow.<br>Meanwhile, he will make the alarm ring.</p>
+</div>
+</div>
+
+
+<div class="row column">
+<div class="blog-post">
+<h3>4. Get familiar with Webcam</h3>
+<script src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery.webcam.min.js"></script>
+<video autoplay></video>
+<div id="webcam"></div>
+
+<script type="text/javascript">
+    jQuery("#webcam").webcam({
+        width: 480,height: 360,
+        mode: "callback",
+        swffile: "jscam.swf",
+    });
+</script>
+<p></p>
+</div>
+</div>
+
+
+<div class="row column">
+<div class="blog-post">
+<h3>5. OpenCV for Human Detection</h3>
+<img class="thumbnail" src="opencv.jpg">
+<p>These results are running on my computer.</p>
+<div class="callout">
+<ul class="menu simple">
+<li><a href="#">Author: Gary Chang</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+<script>
+      $(document).foundation();
+</script>
+
+</html>
